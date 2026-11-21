@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="en" data-mode="ee">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Ethan Olsen | Electrical & Software Engineer</title>
+    <meta name="description" content="Ethan Olsen: electrical engineering MS student at NAU, founder of Laplacient, and AI trainer. Interactive simulations of power converters, battery models, and ML for chip IR-drop, plus full-stack AI products." />
+    <meta name="theme-color" content="#04060A" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <script>
+      // Choose the mode before first paint: ?mode= link, saved choice, else the OS theme.
+      (function () {
+        var m = new URLSearchParams(location.search).get("mode");
+        if (m !== "ee" && m !== "sw") {
+          try { m = localStorage.getItem("mode"); } catch (e) {}
+        }
+        if (m !== "ee" && m !== "sw") m = matchMedia("(prefers-color-scheme: light)").matches ? "sw" : "ee";
+        document.documentElement.dataset.mode = m;
+      })();
+    </script>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+
+    <header class="nav">
+      <div class="wrap nav-inner">
+        <a class="brand" href="#top" aria-label="Ethan Olsen, home">
+          <svg viewBox="0 0 1200 1200" aria-hidden="true"><path fill-rule="evenodd" d="M600 172L1120 1048L80 1048ZM600 476L350 893L850 893Z"/></svg>
+          <span>Ethan Olsen</span>
+        </a>
+        <nav class="nav-links" aria-label="Primary">
+          <a href="#work">Work</a>
+          <a href="#labs">Lab bench</a>
+          <a href="#experience">Experience</a>
+          <a href="#contact">Contact</a>
+        </nav>
+        <button class="mode-switch" type="button" role="switch" aria-checked="false" data-mode-toggle aria-label="Switch between Electrical (dark) and Software (light) mode">
+          <span class="ms-ee">⚡ Electrical</span><span class="ms-sw">&lt;/&gt; Software</span>
+        </button>
+        <button class="nav-menu" type="button" aria-expanded="false" aria-label="Menu"><span></span><span></span></button>
+      </div>
+    </header>
+
+    <main id="main">
+      <!-- ============================================================ HERO -->
+      <section class="hero" id="top">
+        <div class="wrap hero-grid">
+          <div class="hero-copy">
+            <p class="eyebrow">
+              <span data-show="ee">Electrical engineer · MS candidate, Northern Arizona University</span>
+              <span data-show="sw">Software engineer · Founder, Laplacient</span>
+            </p>
+            <h1>
+              <span data-show="ee">I design circuits, model power systems, and teach machines about silicon.</span>
+              <span data-show="sw">I ship full-stack products and agentic AI workflows.</span>
+            </h1>
+            <p class="lead">
+              <span data-show="ee">I've done full-wave Ansys HFSS modeling of signal waveguides in advanced semiconductor packages, and transmission-line models of power converters. I like problems where the physics and the math both have to hold up.</span>
+              <span data-show="sw">FastAPI backends, React frontends, Postgres job queues and Claude-powered agents, shipped for my own company and for consulting clients. I also spend my days finding where frontier LLMs break.</span>
+            </p>
+            <div class="hero-actions">
+              <a class="btn" href="#labs">Try the simulations</a>
+              <a class="btn ghost" href="/docs/Ethan_Olsen_resume.docx" download>Resume</a>
+              <a class="icon-link" href="https://github.com/ejom" target="_blank" rel="noopener">GitHub ↗</a>
+              <a class="icon-link" href="https://www.linkedin.com/in/ethan-olsen-a607ab1ab" target="_blank" rel="noopener">LinkedIn ↗</a>
+            </div>
+            <div class="side-picker">
+              <p>This site has two sides. <b>Pick one:</b></p>
+              <div class="side-buttons">
+                <button type="button" data-set-mode="ee"><b>⚡ Electrical</b><small>dark · oscilloscope</small></button>
+                <button type="button" data-set-mode="sw"><b>&lt;/&gt; Software</b><small>light · terminal</small></button>
+              </div>
+            </div>
+          </div>
+          <div class="hero-visual">
+            <div class="scope" data-show="ee">
+              <div class="scope-bar"><span>Buck converter · switch node</span><span class="rec">● RUN</span></div>
+              <canvas id="scope" aria-label="Animated oscilloscope showing a PWM gate signal and the triangular inductor-current ripple of a buck converter"></canvas>
+            </div>
+            <div class="term" data-show="sw">
+              <div class="term-bar"><i></i><i></i><i></i><span>~/projects</span></div>
+              <pre id="term" aria-label="Replay of commands from my projects with their real output"></pre>
+            </div>
+          </div>
+        </div>
+        <div class="wrap">
+          <ul class="facts">
+            <li><b class="num">3.78</b><span>GPA, BS + MS in Electrical Engineering at NAU</span></li>
+            <li><b>Founder</b><span>Laplacient: AI products and consulting</span></li>
+            <li><b>AI Trainer</b><span>Surge AI, finding frontier-LLM failure modes since 2023</span></li>
+            <li><b>Ansys HFSS</b><span>Signal integrity for advanced packaging, ASU research 2026</span></li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- ============================================================ WORK -->
+      <section id="work" class="section">
+        <div class="wrap">
+          <div class="section-head">
+            <h2>Selected work</h2>
+            <div class="chips-filter" role="group" aria-label="Filter projects">
+              <button type="button" data-filter="all" aria-pressed="true">All</button>
+              <button type="button" data-filter="ee" aria-pressed="false">Electrical</button>
+              <button type="button" data-filter="sw" aria-pressed="false">Software</button>
+            </div>
+          </div>
+
+          <div class="projects">
+            <article class="project featured" data-side="ee">
+              <p class="kicker">ASU · Advanced semiconductor packaging research · Summer 2026</p>
+              <h3>Full-wave Ansys HFSS modeling of package signal waveguides</h3>
+              <p>I built HFSS models of the interconnects that carry high-speed signals through advanced packages: coplanar waveguides and striplines, where a signal trace runs in a dielectric between two ground planes and is fenced by stitching vias. I extracted S-parameters and read them on Smith charts to study impedance matching, insertion and return loss, and how via pitch and fence spacing suppress parasitic plane modes. This fed into studying die-to-die links like Intel EMIB and TSMC CoWoS.</p>
+              <ul class="tags"><li>Ansys HFSS</li><li>S-parameters</li><li>Smith charts</li><li>Stripline / CPW</li><li>Via fencing</li><li>EMIB / CoWoS</li><li>Cleanroom: litho, etch, CVD</li></ul>
+              <div class="links"><a href="#lab-hfss">Interactive stripline model →</a></div>
+            </article>
+
+            <article class="project" data-side="ee">
+              <p class="kicker">EE 599 · Graduate power electronics · Nov 2026</p>
+              <h3>Distributed buck converter with a lossy transmission line</h3>
+              <p>I reproduced Röbenack &amp; Gerbet (2024) in Python, derived the duty-to-current transfer functions from the telegrapher's equations, and extended them with an L<sub>in</sub> ∥ R<sub>p</sub> input element. Damping with R<sub>p</sub> ≈ Z₀ cut the worst-case input ripple at the operating point from <b>14.8 A to 0.22 A</b>.</p>
+              <ul class="tags"><li>Python</li><li>NumPy</li><li>Scilab / Xcos</li><li>LTspice</li><li>Multisim</li></ul>
+              <div class="links"><a href="#lab-buck">Interactive model →</a><a href="https://github.com/ejom/current-mode-control-buck-converter" target="_blank" rel="noopener">GitHub ↗</a></div>
+            </article>
+
+            <article class="project" data-side="ee sw">
+              <p class="kicker">ASU SWAP Hub · Semiconductor Solutions Challenge · Apr 2026</p>
+              <h3>IR-drop prediction with a fully convolutional U-Net</h3>
+              <p>A PyTorch U-Net that predicts power-delivery-network voltage drop from current, PDN density and effective-distance maps. It was pretrained on synthetic layouts and fine-tuned on 10 real circuits. On unseen real designs it reached <b>RMSE 0.54 mV</b> and hotspot <b>precision 0.73</b>.</p>
+              <ul class="tags"><li>PyTorch</li><li>U-Net</li><li>Dense regression</li><li>Data pipelines</li></ul>
+              <div class="links"><a href="#lab-irdrop">Explore results →</a><a href="https://github.com/ejom/Semiconductor-Solutions-Challenge-Submission_Ultron" target="_blank" rel="noopener">GitHub ↗</a><a href="https://credid.asu.edu/public/awards/dd47b4e7-db6e-4c96-96e1-61d30329e5b6" target="_blank" rel="noopener">Certificate ↗</a></div>
+            </article>
+
+            <article class="project" data-side="ee sw">
+              <p class="kicker">MCM / ICM 2026 · Problem A · Team 2629908</p>
+              <h3>"Why does my phone keep dying?" Smartphone battery model</h3>
+              <p>A continuous-time, physics-based additive model of display, CPU, radio and streaming power, calibrated against real iPhone XR drain logs. The headline finding: radios matter. A Wi-Fi-only day lasts <b>~34 h</b>, and the same day on 5G only lasts <b>~17 h</b>.</p>
+              <ul class="tags"><li>Mathematical modeling</li><li>Python</li><li>Calibration</li></ul>
+              <div class="links"><a href="#lab-battery">Run the model →</a><a href="/docs/MCM_Final.pdf" target="_blank">Paper (PDF) ↗</a><a href="https://github.com/ejom/MCM" target="_blank" rel="noopener">GitHub ↗</a></div>
+            </article>
+
+            <article class="project" data-side="ee">
+              <p class="kicker">Power systems · Mar–Apr 2026</p>
+              <h3>Grid-connected multi-string PV inverter</h3>
+              <p>A two-stage MATLAB/Simulink model: dual DC/DC boost converters with hill-climbing MPPT, a PID-controlled DC link, and AC grid injection.</p>
+              <ul class="tags"><li>MATLAB</li><li>Simulink</li><li>MPPT</li><li>PID control</li></ul>
+              <div class="links"><a href="https://github.com/ejom/PV-Inverter-Simulink" target="_blank" rel="noopener">GitHub ↗</a></div>
+            </article>
+
+            <article class="project" data-side="sw">
+              <p class="kicker">Laplacient · Founder · 2025–present</p>
+              <h3>Laplacient Social: an AI social media manager</h3>
+              <p>A Claude agent researches angles, writes per-platform captions, and generates images and video. It schedules through PostPeer, but only after a human approves. Background agent turns survive restarts, and idempotent scheduling means retries never double-post. Stripe credits meter the cost.</p>
+              <ul class="tags"><li>FastAPI</li><li>React + TS</li><li>Claude tool use</li><li>Neon Postgres</li><li>Cloudflare Workers + R2</li><li>fal.ai</li><li>Stripe</li></ul>
+              <div class="links"><a href="#lab-workflow">Walk the workflow →</a><a href="https://laplacient.com" target="_blank" rel="noopener">laplacient.com ↗</a></div>
+            </article>
+
+            <article class="project" data-side="sw">
+              <p class="kicker">Capstone · Sponsor: U.S. Army Yuma Proving Ground</p>
+              <h3>AME: Automated Metadata Extraction</h3>
+              <p>A catalog for test-data file shares. It scans directories, extracts timestamps, sensor type, format and units with per-field provenance and confidence, and serves search and export through a web UI and REST API. Everything ships as one offline Docker image.</p>
+              <ul class="tags"><li>Python</li><li>FastAPI</li><li>PostgreSQL 17</li><li>React + Vite</li><li>Docker</li></ul>
+              <div class="links"><a href="#lab-ame">See the architecture →</a></div>
+            </article>
+
+            <article class="project" data-side="sw">
+              <p class="kicker">Laplacient · Consulting</p>
+              <h3>Learn Prompt Engineering</h3>
+              <p>A consulting practice that helps small businesses adopt AI: scoping sessions, workflow automation and custom builds. Client work includes an SEO automation platform for CadenceSEO and an invoicing agent pipeline for Ecorial, each saving <b>5+ hours a week</b>.</p>
+              <ul class="tags"><li>Astro</li><li>TypeScript</li><li>Agentic workflows</li><li>Client discovery</li></ul>
+              <div class="links"><a href="#lab-consulting">Before / after →</a></div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================ LABS -->
+      <section id="labs" class="section labs">
+        <div class="wrap">
+          <div class="section-head">
+            <div>
+              <h2>Lab bench</h2>
+              <p class="muted">Every model on this page is real code from my projects, ported to run in your browser. Change the inputs and check the results yourself.</p>
+            </div>
+          </div>
+
+          <div class="lab-list">
+            <section class="lab" id="lab-hfss" data-side="ee">
+              <header class="lab-head">
+                <p class="kicker">Signal integrity · Ansys HFSS research</p>
+                <h3>Designing a via-fenced stripline for a package substrate</h3>
+                <p class="muted">This is the structure I modeled most in HFSS: a trace buried in dielectric between two ground planes, with rows of stitching vias tying the planes together. The trace width sets impedance. The via pitch and fence spacing set how high in frequency the line stays clean before energy leaks into parasitic modes between the planes.</p>
+              </header>
+              <div class="lab-body loading" data-mount="hfss"></div>
+            </section>
+
+            <section class="lab" id="lab-buck" data-side="ee">
+              <header class="lab-head">
+                <p class="kicker">Power electronics · transmission lines</p>
+                <h3>Why a 6 m cable breaks a buck converter, and how one resistor fixes it</h3>
+                <p class="muted">Replacing the converter's inductor with a real coax line adds resonances in the PWM band. At 8.49 MHz the line rings and the input ripple reaches amps. A small inductor in series at the input, damped by a resistor near the line's Z₀, absorbs those reflections.</p>
+              </header>
+              <div class="lab-body loading" data-mount="buck"></div>
+            </section>
+
+            <section class="lab" id="lab-battery" data-side="ee sw">
+              <header class="lab-head">
+                <p class="kicker">Mathematical modeling · MCM 2026</p>
+                <h3>What actually drains your phone?</h3>
+                <p class="muted">P(t) = P<sub>display</sub> + P<sub>CPU</sub> + P<sub>radio</sub> + P<sub>stream</sub> + P₀, calibrated per app from two days of measured drain. Change one setting for the whole day and see how long the battery lasts.</p>
+              </header>
+              <div class="lab-body loading" data-mount="battery"></div>
+            </section>
+
+            <section class="lab" id="lab-irdrop" data-side="ee sw">
+              <header class="lab-head">
+                <p class="kicker">Machine learning · chip power integrity</p>
+                <h3>Predicting IR-drop hotspots on circuits the model never saw</h3>
+                <p class="muted">Aggregate on the 10 hidden real circuits: RMSE 0.54 mV · MAE 0.45 mV · NRMSE 0.118 · hotspot precision 0.729 · recall 0.573 · F1 0.510 (hotspot = top 10% of true drop).</p>
+              </header>
+              <div class="lab-body loading" data-mount="irdrop"></div>
+            </section>
+
+            <section class="lab" id="lab-failure" data-side="sw ee">
+              <header class="lab-head">
+                <p class="kicker">AI training · Surge AI</p>
+                <h3>Spot the failure</h3>
+                <p class="muted">My day job is finding the sentence where a frontier model goes wrong, in EE, software and math, and writing down why. Try it: each answer below has exactly one failure.</p>
+              </header>
+              <div class="lab-body loading" data-mount="failure"></div>
+            </section>
+
+            <section class="lab" id="lab-workflow" data-side="sw">
+              <header class="lab-head">
+                <p class="kicker">Product engineering · Laplacient Social</p>
+                <h3>From a form to a scheduled post, with a human in the loop</h3>
+                <p class="muted">Each step shows the plan and post state machines and the parts of the stack involved.</p>
+              </header>
+              <div class="lab-body loading" data-mount="workflow"></div>
+            </section>
+
+            <section class="lab" id="lab-ame" data-side="sw">
+              <header class="lab-head">
+                <p class="kicker">Systems design · Capstone</p>
+                <h3>One container, offline, no message broker</h3>
+                <p class="muted">The client network has no internet access, so AME ships as one image: Postgres doubles as the job queue, and a plain bash entrypoint under tini supervises everything.</p>
+              </header>
+              <div class="lab-body loading" data-mount="ame"></div>
+            </section>
+
+            <section class="lab" id="lab-consulting" data-side="sw">
+              <header class="lab-head">
+                <p class="kicker">Consulting · Learn Prompt Engineering</p>
+                <h3>Turning a weekly chore into a review step</h3>
+                <p class="muted">I work out what a team repeats every week, automate it, and leave a person in charge of the decisions. Flip each card to compare the workflow before and after.</p>
+              </header>
+              <div class="lab-body loading" data-mount="consulting"></div>
+            </section>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================ EXPERIENCE -->
+      <section id="experience" class="section">
+        <div class="wrap two-col">
+          <div>
+            <h2>Experience</h2>
+            <ol class="timeline">
+              <li data-side="ee">
+                <p class="when">Jun – Jul 2026 · Tempe, AZ</p>
+                <h3>Advanced Semiconductor Packaging Research Intern <span>Arizona State University</span></h3>
+                <ul>
+                  <li>Built and ran Ansys HFSS full-wave models of package signal waveguides (coplanar waveguide and via-fenced stripline between two ground planes), interpreting S-parameters, Smith charts and impedance matching.</li>
+                  <li>Studied EMIB and CoWoS for high-frequency die-to-die links.</li>
+                  <li>Did cleanroom work (lithography, etching, CVD) at ASU NanoFab and MacroTechnology Works, and wire-bond testing on the Sigma Bond Tester.</li>
+                </ul>
+              </li>
+              <li data-side="sw">
+                <p class="when">Mar – Jul 2026 · Gilbert, AZ</p>
+                <h3>Software Engineering Intern <span>CadenceSEO</span></h3>
+                <ul>
+                  <li>Led a team of three engineers building internal tools that automate page optimization and SEO analytics.</li>
+                  <li>Owned the SDLC (PR reviews, task allocation) and production deploys on Vercel, Supabase, Railway, Render and Heroku.</li>
+                  <li>Managed API key usage, spend limits and rotation.</li>
+                </ul>
+              </li>
+              <li data-side="sw">
+                <p class="when">Sep 2025 – present · Remote</p>
+                <h3>Founder <span>Laplacient</span></h3>
+                <ul>
+                  <li>Built Laplacient Social, which automates social post generation, scheduling and analytics.</li>
+                  <li>Runs Learn Prompt Engineering, turning client goals into designs and implementations (CadenceSEO, Ecorial).</li>
+                </ul>
+              </li>
+              <li data-side="ee sw">
+                <p class="when">Aug 2023 – present · Remote</p>
+                <h3>AI Trainer <span>Surge AI</span></h3>
+                <ul>
+                  <li>Research failure modes of frontier LLMs in electrical engineering, software engineering and mathematics.</li>
+                  <li>Write adversarial conversations and failure analyses covering correctness, behavior and writing quality.</li>
+                  <li>Build reproducible evaluation environments with Docker, Bash and Harbor CLI, and write reference solutions in high-frequency signal analysis, full-stack engineering and analytic number theory.</li>
+                </ul>
+              </li>
+              <li data-side="ee sw" class="earlier">
+                <p class="when">2021 – 2024</p>
+                <h3>Before engineering</h3>
+                <p class="muted">Shift manager at McDonald's (running crews, scheduling, delegation), structural ironworker and SMAW welder at Arc Steel, and drop-in math tutor at Chandler-Gilbert Community College.</p>
+              </li>
+            </ol>
+          </div>
+
+          <aside>
+            <h2>Education</h2>
+            <div class="edu">
+              <h3>M.S. Electrical Engineering</h3>
+              <p class="muted">Northern Arizona University · Jan 2026 – Aug 2027 · GPA 3.78</p>
+              <h3>B.S. Electrical Engineering</h3>
+              <p class="muted">Northern Arizona University · Jan 2024 – May 2027 · GPA 3.78</p>
+            </div>
+
+            <h2>Certification</h2>
+            <a class="cert" href="https://credid.asu.edu/public/awards/dd47b4e7-db6e-4c96-96e1-61d30329e5b6" target="_blank" rel="noopener">
+              <b>Machine Learning for Static Voltage Drop Prediction</b>
+              <span>Southwest Advanced Prototyping (SWAP) Hub · Apr 2026 ↗</span>
+            </a>
+
+            <h2 id="skills">Toolbox</h2>
+            <div class="skills">
+              <div data-side="ee">
+                <h3>Electrical</h3>
+                <ul class="tags"><li>Ansys HFSS</li><li>Signal integrity</li><li>S-parameters / Smith charts</li><li>Cadence</li><li>LTspice</li><li>KiCad</li><li>NI Multisim</li><li>Keysight</li><li>MATLAB / Simulink</li><li>Scilab</li><li>Oscilloscopes &amp; bench gear</li><li>Cleanroom processing</li></ul>
+              </div>
+              <div data-side="sw">
+                <h3>Software</h3>
+                <ul class="tags"><li>Python</li><li>TypeScript</li><li>FastAPI</li><li>React</li><li>PostgreSQL / SQL</li><li>Docker</li><li>Linux / Bash</li><li>PyTorch</li><li>LangGraph</li><li>Agentic workflows</li><li>Cloudflare</li><li>Vercel / Railway / Render</li></ul>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <!-- ============================================================ CONTACT -->
+      <section id="contact" class="section contact">
+        <div class="wrap">
+          <h2>Let's build something</h2>
+          <p class="lead">I'm looking for roles and projects where hardware and software meet: power and signal integrity, ML for EDA, or AI products that need someone who reads the datasheet.</p>
+          <div class="hero-actions">
+            <a class="btn" href="mailto:ejom762@gmail.com">ejom762@gmail.com</a>
+            <a class="btn ghost" href="https://www.linkedin.com/in/ethan-olsen-a607ab1ab" target="_blank" rel="noopener">LinkedIn ↗</a>
+            <a class="btn ghost" href="https://github.com/ejom" target="_blank" rel="noopener">GitHub ↗</a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="wrap">
+        <span>© <span id="year"></span> Ethan Olsen · Flagstaff, AZ</span>
+        <span>Built with TypeScript and hand-rolled SVG plots, styled in the Laplacient palette.</span>
+      </div>
+    </footer>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
