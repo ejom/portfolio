@@ -99,13 +99,13 @@ export function mountAme(root: HTMLElement) {
     <text x="22" y="30" class="ame-cap">Linux host · Docker Engine · offline</text>
     <rect x="182" y="44" width="436" height="236" rx="10" class="ame-container"/>
     <text x="196" y="64" class="ame-cap">container "ame" · tini → entrypoint.sh</text>
-    ${node("host", 24, 120, 130, 64, "Test-data files", "bind mount, read-only")}
+    ${node("host", 20, 116, 140, 72, "Test-data files", "bind mount,\nread-only")}
     ${node("worker", 200, 86, 190, 56, "ame worker", "scan · extract · resolve")}
     ${node("sched", 200, 160, 190, 48, "ame scheduler", "cron scans")}
     ${node("pg", 420, 86, 180, 56, "PostgreSQL 17", "metadata + job queue")}
     ${node("api", 420, 160, 180, 48, "ame api", "FastAPI :8000")}
     ${node("ui", 420, 226, 180, 44, "Web UI", "React · search · export")}
-    <path d="M154 140 L198 120" class="ame-edge" marker-end="url(#ah)"/>
+    <path d="M160 140 L198 120" class="ame-edge" marker-end="url(#ah)"/>
     <path d="M390 114 L418 114" class="ame-edge" marker-end="url(#ah)"/>
     <path d="M390 184 C404 184 404 140 418 128" class="ame-edge" marker-end="url(#ah)"/>
     <path d="M510 142 L510 158" class="ame-edge" marker-end="url(#ah)"/>
@@ -123,11 +123,30 @@ export function mountAme(root: HTMLElement) {
     g.addEventListener("keydown", (e) => { if ((e as KeyboardEvent).key === "Enter") show(); });
   });
   root.append(wrap);
+  fitLabels(wrap);
+  // Fonts can load after mount and change text widths, so fit again once they have.
+  document.fonts?.ready.then(() => fitLabels(wrap));
+}
+
+// Squeeze any label that would spill past its box (12px padding on each side).
+function fitLabels(wrap: HTMLElement) {
+  wrap.querySelectorAll<SVGGElement>(".ame-node").forEach((g) => {
+    const box = g.querySelector("rect")!.width.baseVal.value - 24;
+    g.querySelectorAll<SVGTextContentElement>("text.t, tspan").forEach((t) => {
+      t.removeAttribute("textLength");
+      t.removeAttribute("lengthAdjust");
+      if (t.getComputedTextLength() > box) {
+        t.setAttribute("textLength", String(box));
+        t.setAttribute("lengthAdjust", "spacingAndGlyphs");
+      }
+    });
+  });
 }
 
 function node(k: string, x: number, y: number, w: number, hh: number, title: string, sub: string) {
+  const lines = sub.split("\n").map((l, n) => `<tspan x="${x + 12}" dy="${n ? 14 : 0}">${l}</tspan>`).join("");
   return `<g class="ame-node" data-k="${k}" tabindex="0" role="button" aria-label="${title}">
     <rect x="${x}" y="${y}" width="${w}" height="${hh}" rx="7"/>
     <text x="${x + 12}" y="${y + 22}" class="t">${title}</text>
-    <text x="${x + 12}" y="${y + 40}" class="s">${sub}</text></g>`;
+    <text x="${x + 12}" y="${y + 40}" class="s">${lines}</text></g>`;
 }
