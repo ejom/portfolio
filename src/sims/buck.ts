@@ -3,12 +3,27 @@
 import { LinePlot, colorbarGradient, drawHeatmap, fmtSI } from "../lib/plot";
 import { h, perFrame, segmented, slider } from "../lib/ui";
 import {
-  D0, DEFAULTS, PLANTS, Z0, bode, firstNotch, linspace, logspace, rippleMap,
-  type BuckParams,
+  D0, DEFAULTS, PLANTS, Z0, bode, firstNotch, linspace, logspace, refinePeak, rippleMap,
+  type BuckParams, type Plant,
 } from "./buckModel";
 
 const F_BODE = logspace(2, 8.3, 5000); // 100 Hz – 200 MHz
-const F_PWM = linspace(2e6, 10e6, 161);
+const F_PWM = linspace(2e6, 10e6, 401);
+const DF = F_PWM[1] - F_PWM[0];
+
+/** Index of the largest value in a grid, without spreading big arrays. */
+function argmax(rows: Float64Array[]) {
+  let v = -Infinity, i = 0, j = 0;
+  rows.forEach((row, r) => { for (let c = 0; c < row.length; c++) if (row[c] > v) { v = row[c]; i = r; j = c; } });
+  return { v, i, j };
+}
+
+/** Worst-case ripple at duty d over the PWM band, refined past the grid. */
+function worstAt(fn: Plant, p: BuckParams, d: number) {
+  const row = rippleMap(fn, p, F_PWM, new Float64Array([d]));
+  const { j } = argmax(row);
+  return refinePeak(fn, p, F_PWM[j], DF, d);
+}
 const DUTY = linspace(0.02, 0.98, 97);
 const VMIN = 0.01; // 10 mA floor for the log color scale
 
@@ -87,13 +102,13 @@ export function mountBuck(root: HTMLElement) {
   function renderHeat() {
     const z = maps[plantKey];
     drawHeatmap(canvas, z, VMIN, vmax);
-    let best = 0, bi = 0, bj = 0;
-    z.forEach((row, i) => row.forEach((v, j) => { if (v > best) { best = v; bi = i; bj = j; } }));
-    marker.style.left = `${(bj / (F_PWM.length - 1)) * 100}%`;
+    const { i: bi, j: bj } = argmax(z);
+    const plant = PLANTS.find((x) => x.key === plantKey)!;
+    const peak = refinePeak(plant.fn, p, F_PWM[bj], DF, DUTY[bi]);
+    marker.style.left = `${((peak.f - 2e6) / 8e6) * 100}%`;
     marker.style.bottom = `${(bi / (DUTY.length - 1)) * 100}%`;
     d0line.style.bottom = `${((D0 - 0.02) / 0.96) * 100}%`;
-    const name = PLANTS.find((x) => x.key === plantKey)!.name;
-    heatTitle.innerHTML = `<b>${name}</b>: worst case <b class="num">${fmtSI(best, "A")}</b> RMS at f<sub>PWM</sub> = ${(F_PWM[bj] / 1e6).toFixed(2)} MHz, D = ${DUTY[bi].toFixed(2)}`;
+    heatTitle.innerHTML = `<b>${plant.name}</b>: worst case <b class="num">${fmtSI(peak.v, "A")}</b> RMS at f<sub>PWM</sub> = ${(peak.f / 1e6).toFixed(3)} MHz, D = ${DUTY[bi].toFixed(2)}`;
     (cbar.querySelector(".cbar-max") as HTMLElement).textContent = fmtSI(vmax, "A");
   }
 
@@ -114,24 +129,26 @@ export function mountBuck(root: HTMLElement) {
 
   function renderReadouts() {
     const notch = firstNotch(PLANTS[1].fn, p);
-    const atD0 = PLANTS.map((pl) => {
-      const row = rippleMap(pl.fn, p, F_PWM, new Float64Array([D0]))[0];
-      return Math.max(...row);
-    });
+    const bare = worstAt(PLANTS[1].fn, p, D0);
+    const damped = worstAt(PLANTS[3].fn, p, D0);
     readouts.innerHTML = `
       <div><span>Z₀ = √(L′/C′)</span><b>${Z0.toFixed(1)} Ω</b></div>
       <div><span>1st line antiresonance</span><b>${notch ? fmtSI(notch, "Hz", 3) : "—"}</b></div>
-      <div><span>Worst ripple @ D₀, bare line</span><b class="bad">${fmtSI(atD0[1], "A")}</b></div>
-      <div><span>Worst ripple @ D₀, with Lin ∥ Rp</span><b class="good">${fmtSI(atD0[3], "A")}</b></div>`;
+      <div><span>Worst ripple @ D₀, bare line</span><b class="bad">${fmtSI(bare.v, "A")}</b></div>
+      <div><span>Worst ripple @ D₀, with Lin ∥ Rp</span><b class="${damped.v < bare.v / 5 ? "good" : ""}">${fmtSI(damped.v, "A")}</b></div>`;
   }
 
   const recompute = () => {
     renderBode();
     maps = Object.fromEntries(PLANTS.map((pl) => [pl.key, rippleMap(pl.fn, p, F_PWM, DUTY)]));
-    vmax = Math.max(...Object.values(maps).flatMap((m) => m.map((r) => Math.max(...r))));
+    vmax = Math.max(...Object.values(maps).map((m) => argmax(m).v));
     renderHeat();
-    renderReadouts();
+    // Refined readouts cost about as much as everything else combined, so
+    // update them once the slider settles instead of every frame.
+    clearTimeout(readoutTimer);
+    readoutTimer = window.setTimeout(renderReadouts, 120);
   };
+  let readoutTimer = 0;
   const schedule = perFrame(recompute);
 
   root.append(

@@ -61,21 +61,30 @@ function niceStep(span: number, target: number): number {
   return (n < 1.5 ? 1 : n < 3 ? 2 : n < 7 ? 5 : 10) * mag;
 }
 
+// Tick generators are hard-capped: a bad domain (0 on a log axis, NaN, or a
+// step below float precision) must never be able to spin forever.
+const MAX_TICKS = 50;
+
 function linTicks(lo: number, hi: number, target: number): number[] {
   const step = niceStep(hi - lo, target);
+  if (!isFinite(lo) || !isFinite(hi) || !(step > 0) || lo + step === lo) return [];
   const out: number[] = [];
-  for (let v = Math.ceil(lo / step) * step; v <= hi + step * 1e-9; v += step) {
+  const first = Math.ceil(lo / step);
+  for (let i = 0; i < MAX_TICKS; i++) {
+    const v = (first + i) * step;
+    if (v > hi + step * 1e-9) break;
     out.push(Math.abs(v) < step * 1e-9 ? 0 : v);
   }
   return out;
 }
 
 function logTicks(lo: number, hi: number, maxTicks: number): number[] {
+  if (!(lo > 0) || !(hi > lo) || !isFinite(hi)) return [];
   const a = Math.ceil(Math.log10(lo) - 1e-9);
   const b = Math.floor(Math.log10(hi) + 1e-9);
-  const every = Math.max(1, Math.ceil((b - a + 1) / maxTicks));
+  const every = Math.max(1, Math.ceil((b - a + 1) / Math.max(1, maxTicks)));
   const out: number[] = [];
-  for (let e = a; e <= b; e++) if ((e - a) % every === 0) out.push(10 ** e);
+  for (let e = a; e <= b && out.length < MAX_TICKS; e += every) out.push(10 ** e);
   return out;
 }
 
@@ -125,7 +134,13 @@ export class LinePlot {
 
   setOptions(patch: Partial<LinePlotOptions>) {
     this.opts = { ...this.opts, ...patch };
-    this.render();
+    if (this.series.length) this.render(); // update() renders the first time
+  }
+
+  /** Change options and data together with a single render. */
+  set(patch: Partial<LinePlotOptions>, series: Series[]) {
+    this.opts = { ...this.opts, ...patch };
+    this.update(series);
   }
 
   update(series: Series[]) {
@@ -178,8 +193,13 @@ export class LinePlot {
         else { const pad = (y1 - y0 || 1) * 0.06; y0 -= pad; y1 += pad; }
       }
     }
-    if (!isFinite(x0)) [x0, x1] = [0, 1];
-    if (!isFinite(y0)) [y0, y1] = [0, 1];
+    // No usable data yet: fall back to a range that is valid for the axis type.
+    if (!isFinite(x0) || !isFinite(x1)) [x0, x1] = o.xLog ? [1, 10] : [0, 1];
+    if (!isFinite(y0) || !isFinite(y1)) [y0, y1] = o.yLog ? [1, 10] : [0, 1];
+    if (x1 <= x0) x1 = o.xLog ? x0 * 10 : x0 + 1;
+    if (y1 <= y0) y1 = o.yLog ? y0 * 10 : y0 + 1;
+    if (o.xLog && x0 <= 0) x0 = x1 / 1e3;
+    if (o.yLog && y0 <= 0) y0 = y1 / 1e3;
     return { x0, x1, y0, y1 };
   }
 
@@ -238,17 +258,19 @@ export class LinePlot {
     }, axes).textContent = o.yLabel;
 
     const marks = el("g", { "clip-path": `url(#${clipId})`, class: "plot-marks" }, svg);
-    for (const mk of o.marks ?? []) {
+    (o.marks ?? []).forEach((mk, k) => {
       if (mk.axis === "x") {
         const x = tx(mk.value);
         el("line", { x1: x, x2: x, y1: m.t, y2: m.t + ih }, marks);
-        if (mk.label) el("text", { x: x + 4, y: m.t + 14 }, marks).textContent = mk.label;
+        // stack labels so neighbouring marks don't overprint; flip near the right edge
+        const right = x > m.l + iw * 0.8;
+        if (mk.label) el("text", { x: right ? x - 4 : x + 4, y: m.t + 14 + 14 * k, "text-anchor": right ? "end" : "start" }, marks).textContent = mk.label;
       } else {
         const y = ty(mk.value);
         el("line", { x1: m.l, x2: m.l + iw, y1: y, y2: y }, marks);
         if (mk.label) el("text", { x: m.l + iw - 4, y: y - 5, "text-anchor": "end" }, marks).textContent = mk.label;
       }
-    }
+    });
 
     const lines = el("g", { "clip-path": `url(#${clipId})` }, svg);
     const vis = this.series.filter((s) => !s.hidden);

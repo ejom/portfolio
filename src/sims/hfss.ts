@@ -92,6 +92,7 @@ export function mountHfss(root: HTMLElement) {
     const at = 50e9;
     readouts.innerHTML = `
       <div><span>Characteristic impedance Z₀</span><b class="${Math.abs(z - 50) < 2.5 ? "good" : ""}">${z.toFixed(1)} Ω</b></div>
+      <div><span>Return loss into 50 Ω</span><b>${(() => { const g = Math.abs((z - 50) / (z + 50)); return g < 1e-4 ? "> 80 dB" : `${(-20 * Math.log10(g)).toFixed(1)} dB`; })()}</b></div>
       <div><span>Width for 50 Ω</span><b>${um(w50)}</b></div>
       <div><span>Delay</span><b>${delay(p).toFixed(2)} ps/mm</b></div>
       <div><span>Loss @ 50 GHz</span><b>${((alphaD(at, p) + alphaC(at, p)) / 1000).toFixed(3)} dB/mm</b></div>
@@ -103,21 +104,19 @@ export function mountHfss(root: HTMLElement) {
       : "Via pitch is the limit. Gaps between vias start to leak energy into the plane pair, so stitch more densely.";
 
     if (view === "loss") {
-      plot.setOptions({ xLog: true, yLog: true, xLabel: "Frequency (Hz)", yLabel: "Loss (dB/mm)", xDomain: [1e8, 4e11], yDomain: undefined,
-        fmtX: (v) => fmtSI(v, "Hz", 3), hoverTitle: (x) => fmtSI(x, "Hz", 3),
-        marks: [{ axis: "x", value: fc, label: "channel mode" }, { axis: "x", value: fp, label: "λ/10 pitch" }] });
       const ad = F.map((f) => alphaD(f, p) / 1000);
       const ac = F.map((f) => alphaC(f, p) / 1000);
-      plot.update([
+      plot.set({ xLog: true, yLog: true, xLabel: "Frequency (Hz)", yLabel: "Loss (dB/mm)", xDomain: [1e8, 4e11], yDomain: undefined,
+        fmtX: (v) => fmtSI(v, "Hz", 3), hoverTitle: (x) => fmtSI(x, "Hz", 3),
+        marks: [{ axis: "x", value: fc, label: "channel mode" }, { axis: "x", value: fp, label: "λ/10 pitch" }] }, [
         { name: "Total", x: F, y: ad.map((v, i) => v + ac[i]), color: "var(--accent)", width: 2.5 },
         { name: "Conductor (skin effect)", x: F, y: ac, color: "var(--s3)", dash: "6 4" },
         { name: "Dielectric (tan δ)", x: F, y: ad, color: "var(--s4)", dash: "2 4" },
       ]);
     } else {
-      plot.setOptions({ xLog: true, yLog: false, xLabel: "Trace width", yLabel: "Z₀ (Ω)", xDomain: [3e-6, 300e-6], yDomain: [0, 160],
+      plot.set({ xLog: true, yLog: false, xLabel: "Trace width", yLabel: "Z₀ (Ω)", xDomain: [3e-6, 300e-6], yDomain: [0, 160],
         fmtX: (v) => um(v), hoverTitle: (x) => `w = ${um(x)}`,
-        marks: [{ axis: "y", value: 50, label: "50 Ω" }, { axis: "x", value: p.w, label: "current w" }] });
-      plot.update([
+        marks: [{ axis: "y", value: 50, label: "50 Ω" }, { axis: "x", value: p.w, label: "current w" }] }, [
         { name: `b = ${um(p.b)}, εr = ${p.er.toFixed(1)}`, x: Wsweep, y: Wsweep.map((w) => z0Stripline(w, p.b, p.er)), color: "var(--accent)", width: 2.5 },
       ]);
     }

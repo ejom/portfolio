@@ -107,6 +107,39 @@ export function firstNotch(fn: Plant, p: BuckParams, fMin = 1e6, fMax = 1e8): nu
 export const K = 40; // PWM harmonics
 export const D0 = 0.512; // paper operating point, v0 = 6 V
 
+/** RMS ripple [A] at a single (f_PWM, D) point. */
+export function rippleAt(fn: Plant, p: BuckParams, f: number, d: number): number {
+  let sum = 0;
+  for (let k = 1; k <= K; k++) {
+    const a = (2 * Math.sin(Math.PI * k * d)) / (Math.PI * k);
+    const P = fn(c(0, 2 * Math.PI * f * k), p);
+    sum += a * a * (P.re * P.re + P.im * P.im);
+  }
+  return Math.sqrt(sum / 2);
+}
+
+/**
+ * Line resonances are far narrower than any display grid, so a grid maximum
+ * understates the peak. Search finely around a coarse peak at (f0, d) within ±df.
+ */
+export function refinePeak(fn: Plant, p: BuckParams, f0: number, df: number, d: number) {
+  let best = { f: f0, v: rippleAt(fn, p, f0, d) };
+  let lo = Math.max(2e6, f0 - df);
+  let hi = Math.min(10e6, f0 + df);
+  for (let pass = 0; pass < 3; pass++) {
+    const n = 60;
+    for (let i = 0; i <= n; i++) {
+      const f = lo + ((hi - lo) * i) / n;
+      const v = rippleAt(fn, p, f, d);
+      if (v > best.v) best = { f, v };
+    }
+    const w = (hi - lo) / n;
+    lo = Math.max(2e6, best.f - 2 * w);
+    hi = Math.min(10e6, best.f + 2 * w);
+  }
+  return best;
+}
+
 /**
  * RMS ripple of the line input current [A] on a (D, f_PWM) grid:
  *   I_rms(f, D) = sqrt( Σ_k (a_k(D) |P(j k 2π f)|)² / 2 ),  a_k = 2|sin(π k D)| / (π k)

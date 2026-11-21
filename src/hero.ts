@@ -12,6 +12,8 @@ export function mountScope(canvas: HTMLCanvasElement) {
   const D = 0.512;
   let t0 = performance.now();
   let raf = 0;
+  let colors = { grid: "", ch1: "", ch2: "" };
+  const readColors = () => { colors = { grid: cssVar("--scope-grid"), ch1: cssVar("--s3"), ch2: cssVar("--glow") }; };
 
   function frame(now: number) {
     const dpr = Math.min(2, devicePixelRatio || 1);
@@ -24,7 +26,7 @@ export function mountScope(canvas: HTMLCanvasElement) {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, w, hh);
 
-    const grid = cssVar("--scope-grid");
+    const grid = colors.grid;
     ctx.strokeStyle = grid;
     ctx.lineWidth = 1;
     for (let i = 1; i < 10; i++) {
@@ -46,20 +48,20 @@ export function mountScope(canvas: HTMLCanvasElement) {
     // CH1: gate signal
     const hi = hh * 0.12;
     const lo = hh * 0.38;
-    trace(cssVar("--s3"), (x) => (phase(x) < D ? hi : lo));
+    trace(colors.ch1, (x) => (phase(x) < D ? hi : lo));
     // CH2: inductor current, rising during on-time and falling during off-time
     const mid = hh * 0.68;
     const amp = hh * 0.13;
-    trace(cssVar("--glow"), (x) => {
+    trace(colors.ch2, (x) => {
       const p = phase(x);
       const u = p < D ? -1 + (2 * p) / D : 1 - (2 * (p - D)) / (1 - D);
       return mid - amp * u;
     });
 
     ctx.font = "600 11px var(--mono, monospace)";
-    ctx.fillStyle = cssVar("--s3");
+    ctx.fillStyle = colors.ch1;
     ctx.fillText("CH1  gate  D = 0.512", 10, 18);
-    ctx.fillStyle = cssVar("--glow");
+    ctx.fillStyle = colors.ch2;
     ctx.fillText("CH2  i_L  ripple", 10, hh * 0.5 + 6);
 
     if (!reduced.matches && document.documentElement.dataset.mode === "ee") raf = requestAnimationFrame(frame);
@@ -80,7 +82,7 @@ export function mountScope(canvas: HTMLCanvasElement) {
     ctx.shadowBlur = 0;
   }
 
-  const start = () => { cancelAnimationFrame(raf); t0 = performance.now(); raf = requestAnimationFrame(frame); };
+  const start = () => { readColors(); cancelAnimationFrame(raf); t0 = performance.now(); raf = requestAnimationFrame(frame); };
   window.addEventListener("modechange", start);
   new ResizeObserver(start).observe(canvas);
   start();
